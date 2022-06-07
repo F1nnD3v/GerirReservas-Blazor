@@ -1,0 +1,273 @@
+﻿@page "/GerirReservas"
+
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime 
+@using System.Net.Http;
+@using System.Net.Http.Headers;
+@using AutoMapper
+@using GerirPessoasWebsite.Modelos;
+@using static System.Net.WebRequestMethods;
+
+<h3>Gerir Reservas</h3>
+@if (showForm)
+{
+    @if (Erro == null)
+    {
+        @if (pessoas == null && status == null)
+        {
+            <p>A carregar...</p>
+        }
+        else
+        {
+            <button type="button" class="btn btn-primary" @onclick="() => changeFormStatus()"><span class="oi oi-chevron-bottom" data-glyph="chevron-bottom"></span></button>
+            <br />
+            <input id="searchCheckIn" type="date" @onchange="((e) => Procurar("checkin", e.Value.ToString();})>
+            <input id="checkin" type="date" min="@today" bind="@today" required @onchange="((e) => {dataCheckIn = e.Value.ToString();})"/>
+            <input id="checkin" type="date" min="@tomorrow" bind="@tomorrow" required @onchange="((e) => {dataCheckOut = e.Value.ToString();})"/>
+            <input type="textarea" placeholder="observações" @onchange="((e) => {observacoes = e.Value.ToString();})"/>
+            <select class="form-select" aria-label="Default select example" bind="@id_status" @onchange="((e) => {id_status = Convert.ToInt32(e.Value);})">
+                <option selected value="">Selecione o status da reserva</option>   
+                @foreach (var stat in statuses)
+                {
+                    <option value="@stat.Id_status">@stat.status</option>
+                }
+            </select>
+            <select class="form-select" aria-label="Default select example" @onchange="((e) => {id_cliente = Convert.ToInt32(e.Value);})">
+                <option selected value="nulo">A reserva fica em nome de...</option>
+                @foreach (var pessoa in pessoas)
+                {
+                    <option value="@pessoa.id">@pessoa.nome</option>
+                }
+            </select>
+            <select class="form-select" aria-label="Default select example" @onchange="((e) => {id_casa = Convert.ToInt32(e.Value);})">
+                <option selected value="">Selecione a casa que vai ser reservada</option>
+                @foreach (var casa in casas)
+                {
+                    <option value="@casa.Id">@casa.nome</option>
+                }
+            </select>     <div class="input-group mb-3">
+                <input type="number" placeholder="valor" class="form-control" required @onchange="((e) => {valor = Convert.ToInt32(e.Value);})"><span class="input-group-text">€</span>
+            </div>      <button class="btn btn-primary" @onclick="((e) => {AdicionarReserva();})">Adicionar reserva</button>
+        }
+
+    }
+    else
+    {
+        @Erro
+    }
+}else{
+    <button type="button" class="btn btn-primary" @onclick="() => changeFormStatus()"><span class="oi oi-chevron-top" data-glyph="chevron-bottom"></span></button>
+}
+@if(Erro == null)
+{
+    @if(reservas == null)
+    {
+        <p>A carregar...</p>
+    }
+    else
+    {
+        <h1>Tabela reservas</h1>
+        <table class="table">
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Check in</th>
+                <th scope="col">Check out</th>
+                <th scope="col">Observações</th>
+                <th scope="col">Status</th>
+                <th scope="col">Valor</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Casa</th>
+            </tr>
+            @foreach(var reserva in reservas)
+            {
+                <tr>
+                    <td scope="row">
+                        @reserva.Id
+                    </td>
+                    <td scope="row">
+                        @reserva.DataCheckIn
+                    </td>
+                    <td scope="row">
+                        @reserva.DataCheckOut
+                    </td>
+                    <td scope="row">
+                        @reserva.Observacoes
+                    </td>
+                    <td scope="row">
+                        @statuses.Where(stat => stat.Id_status == reserva.Id_status).FirstOrDefault().status
+                    </td>
+                    <td scope="row">
+                        @reserva.valor€
+                    </td>
+                    <td scope="row">
+                        @pessoas.Where(pessoa => pessoa.id == reserva.id_cliente).FirstOrDefault().nome
+                    </td>
+                    <td scope="row">
+                        @casas.Where(casa => casa.Id == reserva.id_casa).FirstOrDefault().nome
+                    </td>
+                    <td>
+                        <a href="/EditarReserva/@reserva.Id"><button type="button" class="btn btn-primary"><span class="oi oi-pencil" data-glyph="pencil"></span></button></a>
+                        <button type="button" class="btn btn-danger"><span class="oi oi-trash" data-glyph="trash"></span></button>
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+}
+@code {
+    public int id_status { get; set; }
+    public int id { get; set; }
+    public int id_cliente { get; set; }
+    public int id_casa { get; set; }
+    public string dataCheckIn { get; set; }
+    public string dataCheckOut { get; set; }
+    public string observacoes { get; set; }
+    public int valor { get; set; }
+    public string cliente { get; set; }
+    public string status { get; set; }
+    public List<Status> statuses { get; set; }
+    public List<Pessoa> pessoas { get; set; }
+    public List<Reserva> reservas {get; set;}
+    public List<Casa> casas { get; set; }
+    public string Erro { get; set; }
+    public DateTime todayDate { get; set; }
+    public string tomorrow { get; set; }
+    public string today { get; set; }
+
+    public bool showForm { get; set; }
+
+    //Antes da página carregar vai chamar esta função
+    protected override async Task OnInitializedAsync()
+    {
+        todayDate = DateTime.Now;
+        today = DateTime.Now.ToString("d/M/yyyy h:mm:ss");
+        tomorrow =  todayDate.AddDays(1).ToString("d/M/yyyy h:mm:ss");
+
+        //Vai carregar todos os status
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360");
+            HttpResponseMessage response = await client.GetAsync("getStatus");
+            if (response.IsSuccessStatusCode)
+            {
+                statuses = await response.Content.ReadFromJsonAsync<List<Status>>();
+                Console.WriteLine("Status carregados!");
+            }
+        }catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        //Vai carregar todas as pessoas
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360");
+            HttpResponseMessage response = await client.GetAsync("ListarPessoas");
+
+            if (response.IsSuccessStatusCode)
+            {
+                pessoas = await response.Content.ReadFromJsonAsync<List<Pessoa>>();
+                Console.WriteLine("Pessoas Carregadas");
+            }
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        //Vai carregar todas as casas
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360");
+            HttpResponseMessage response = await client.GetAsync("getCasas");
+            if (response.IsSuccessStatusCode)
+            {
+                casas = await response.Content.ReadFromJsonAsync<List<Casa>>();
+                Console.WriteLine("Casas carregadas");
+            }
+        }catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        //Vai carregar todas as reservas
+        try
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360");
+            HttpResponseMessage response = await client.GetAsync("getReservas");
+
+            if (response.IsSuccessStatusCode)
+            {
+                reservas = await response.Content.ReadFromJsonAsync<List<Reserva>>();
+                Console.WriteLine("Reservas carregadas");
+            }
+        }catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    public async Task AdicionarReserva()
+    {
+        try{
+            var reserva = new Reserva();
+            reserva.DataCheckIn = dataCheckIn;
+            reserva.DataCheckOut = dataCheckOut;
+            reserva.Observacoes = observacoes;
+            reserva.Id_status = id_status;
+            reserva.valor = valor;
+            reserva.id_cliente = id_cliente;
+            reserva.id_casa = id_casa;
+
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360");
+            HttpResponseMessage response = await client.PostAsJsonAsync("inserirReserva", reserva);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Reserva adicionada!");
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+            }
+
+        }catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Console.WriteLine("Erro ao adicionar casa");
+        }
+        NavigationManager.NavigateTo("/GerirReservas", true);
+    }
+
+    public async Task changeFormStatus(){
+        showForm = !showForm;
+    }
+
+    public async Task Procurar(string tipo, string param)
+    {
+        if(param.Length > 0)
+        {
+            switch (tipo)
+            {
+                case "checkin":
+                    reservas = reservas.Where(reserva => reserva.DataCheckIn.Contains(param)).Select("*");
+                    break;
+            }
+        }
+        else
+        {
+            try
+            {
+                var client = new HttpClient();
+                client.BaseAddress = new Uri("https://localhost:44360");
+                HttpResponseMessage response = await client.GetAsync("getReservas");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    reservas = await response.Content.ReadFromJsonAsync<List<Reserva>>();
+                    Console.WriteLine("Reservas carregadas");
+                }
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            } 
+        }
+    }
+}

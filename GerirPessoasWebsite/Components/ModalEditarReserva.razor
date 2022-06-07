@@ -1,0 +1,119 @@
+﻿@inject NavigationManager NavigationManager;
+
+@using System.Net.Http;
+@using System.Net.Http.Headers;
+@using AutoMapper;
+@using static System.Net.WebRequestMethods;
+
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tem a certeza que deseja editar esta reserva com essas seguintes opções?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Id: @id</strong></p>
+                <p><strong>Check In: @checkIn</strong></p>
+                <p><strong>Check Out: @checkOut</strong></p>
+                <p><strong>Observações: @observacoes</strong></p>
+                <p><strong>Valor: @valor</strong></p>
+                <p><strong>Status: </strong>@statusModal</p>
+                <p><strong>Cliente: </strong>@pessoaModal</p>
+                <p><strong>Nome da casa: </strong>@casaModal</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success"  @onclick="() => EditarReserva(checkIn, checkOut, observacoes, id_status, id_cliente, id_casa, valor)">Sim</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" @onclick="() => Close()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@if (ShowBackdrop)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code{
+    public Guid Guid = Guid.NewGuid();
+    public string ModalDisplay = "none;";
+    public string ModalClass = "";
+    public bool ShowBackdrop = false;
+
+    int id;
+    string checkIn;
+    string checkOut;
+    string observacoes;
+    int id_status;
+    int id_cliente;
+    int id_casa;
+    int valor;
+
+    public string statusModal { get; set; }
+    public string pessoaModal { get; set; }
+    public string casaModal { get; set; }
+
+    public List<Status> statuses { get; set; }
+    public List<Pessoa> pessoas { get; set; }
+    public List<Casa> casas { get; set; }
+
+    public void Open(string checkIn, string checkOut, string observacoes, int id_status, int id_cliente, int id_casa, int valor)
+    {
+        this.checkIn = checkIn;
+        this.checkOut = checkOut;
+        this.observacoes = observacoes;
+        this.id_status = id_status;
+        this.id_cliente = id_cliente;
+        this.id_casa = id_casa;
+        this.valor = valor;
+
+        statusModal = statuses.Where(status => status.Id_status == id_status).FirstOrDefault().status;
+        pessoaModal = pessoas.Where(pessoa => pessoa.id == id_cliente).FirstOrDefault().nome;
+        casaModal = casas.Where(casa => casa.Id == id_casa).FirstOrDefault().nome;
+
+
+        ModalDisplay = "block;";
+        ModalClass = "Show";
+        ShowBackdrop = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+        StateHasChanged();
+    }
+
+    public async Task EditarReserva(string checkIn, string checkOut, string observacoes, int id_status, int id_cliente, int id_casa, int valor)
+    {
+        try
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            var reserva = new Reserva();
+            reserva.DataCheckIn = checkIn;
+            reserva.DataCheckOut = checkOut;
+            reserva.Observacoes = observacoes;
+            reserva.Id_status = id_status;
+            reserva.id_cliente = id_cliente;
+            reserva.id_casa = id_casa;
+            reserva.valor = valor;
+            HttpResponseMessage response = await client.PutAsJsonAsync("editarReserva", reserva);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Reserva editada com sucesso!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Não foi possivel editar a reserva!");
+            Console.WriteLine(ex.Message);
+        }
+        NavigationManager.NavigateTo("/", true);
+    }
+}

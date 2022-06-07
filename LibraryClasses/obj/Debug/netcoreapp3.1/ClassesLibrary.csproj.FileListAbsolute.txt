@@ -1,0 +1,13 @@
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\bin\Debug\netcoreapp3.1\ClassesLibrary.deps.json
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\bin\Debug\netcoreapp3.1\ClassesLibrary.dll
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\bin\Debug\netcoreapp3.1\ClassesLibrary.pdb
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\obj\Debug\netcoreapp3.1\ClassesLibrary.csproj.AssemblyReference.cache
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\obj\Debug\netcoreapp3.1\ClassesLibrary.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\obj\Debug\netcoreapp3.1\ClassesLibrary.AssemblyInfoInputs.cache
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\obj\Debug\netcoreapp3.1\ClassesLibrary.AssemblyInfo.cs
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\obj\Debug\netcoreapp3.1\ClassesLibrary.csproj.CoreCompileInputs.cache
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\obj\Debug\netcoreapp3.1\ClassesLibrary.dll
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\obj\Debug\netcoreapp3.1\ClassesLibrary.pdb
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\bin\Debug\netcoreapp3.1\ClassesLibrary.runtimeconfig.json
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\bin\Debug\netcoreapp3.1\ClassesLibrary.runtimeconfig.dev.json
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\LibraryClasses\obj\Debug\netcoreapp3.1\ClassesLibrary.genruntimeconfig.cache

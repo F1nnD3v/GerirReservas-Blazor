@@ -1,0 +1,297 @@
+﻿@page "/GerirCasas"
+
+@inject NavigationManager NavigationManager
+@using System.Net.Http;
+@using System.Net.Http.Headers;
+@using AutoMapper
+@using GerirPessoasWebsite.Modelos;
+@using static System.Net.WebRequestMethods;
+
+@inject NavigationManager NavigationManager
+
+<h3>Gerir Casas</h3>
+    <h1>Adicionar casas</h1>
+@if (showForm)
+{
+    @if (Erro == null)
+    {
+        @if (pessoas == null)
+        {
+            <p>A carregar...</p>
+        }
+        else
+        {
+            <button type="button" class="btn btn-primary" @onclick="() => changeFormStatus()"><span class="oi oi-chevron-bottom" data-glyph="chevron-bottom"></span></button>
+            <div class="form-add">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md">
+                            <div class="form-group">
+                                <input type="text" class="form-control" @bind="@idDono">
+                            </div>
+                            <div class="form-group">
+                                <select class="form-select" aria-label="Default select example" bind="@idDono" @onchange="((e) => {idDono = Convert.ToInt32(e.Value);})">
+                                    <option selected value="nulo">Selecione uma pessoa para associar como dono</option>
+                                    @foreach (var pessoa in pessoas)
+                                    {
+                                        <option value="@pessoa.id">@pessoa.nome</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg">
+                            <div class="form-group">
+                                <input type="text" placeholder="Nome da casa" class="form-control"  @oninput="((e) => {nomeCasa = e.Value.ToString();})" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md">
+                            <div class="form-group">
+                                <input type="text" placeholder="Morada da casa" class="form-control"  @oninput="((e) => {moradaCasa = e.Value.ToString();})" required>
+                            </div>
+                        </div>
+                        <div class="col-lg">
+                            <div class="form-group">
+                                <input type="text" placeholder="Número" class="form-control"  @oninput="((e) => {numeroCasa = Convert.ToInt32(e.Value);})" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md">
+                            <div class="form-group">
+                                <input type="text" placeholder="Código postal" class="form-control"  @oninput="((e) => {codigoPostal = e.Value.ToString();})" required>
+                            </div>
+                        </div>
+                        <div class="col-lg">
+                            <div class="form-group">
+                                <input type="text" placeholder="Localidade" class="form-control"  @oninput="((e) => {localidade = e.Value.ToString();})" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md">
+                            <div class="form-group">
+                                <input type="text" placeholder="Distrito" class="form-control"  @oninput="((e) => {distrito = e.Value.ToString();})" required>
+                            </div>
+                        </div>
+                        <div class="col-lg">
+                            <div class="form-group">
+                                <input type="text" placeholder="País" class="form-control"  @oninput="((e) => {pais = e.Value.ToString();})" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" @onclick="((e) => {AdicionarCasa();})"><span class="oi oi-plus" data-glyph="plus"></span></button>
+            </div>
+        }
+
+    }
+    else
+    {
+        @Erro
+    }
+}else{
+<button type="button" class="btn btn-primary" @onclick="() => changeFormStatus()"><span class="oi oi-chevron-top" data-glyph="chevron-bottom"></span></button>
+}
+<div class="form-group">
+<h2 style="margin-top:1rem;">Tabela de casas</h2>
+
+@if (Erro == null)
+{
+    @if (casas == null)
+    {
+        <p>A carregar casas...</p>
+    }
+    else
+    {
+        <table class="table">
+            <tr>    
+                <th scope="col">Id</th>
+                <th scope="col">Id do dono</th>
+                <th scope="col">Nome do dono</th>
+                <th scope="col">Nome da casa</th>
+                <th scope="col">Morada</th>
+                <th scope="col">Número</th>
+                <th scope="col">Código postal</th>
+                <th scope="col">Localidade</th>
+                <th scope="col">Distrito</th>
+                <th scope="col">País</th>
+            </tr>
+            @foreach (var casa in casas)
+            {
+                <tr>
+                    <td scope="row">
+                        @casa.Id
+                    </td>
+                    <td scope="row">
+                        @casa.id_Dono
+                    </td>
+                    <td scope="row">
+                            @pessoas.Where(pessoa => pessoa.id == casa.id_Dono).FirstOrDefault().nome
+                    </td>
+                    <td scope="row">
+                        @casa.nome
+                    </td>
+                    <td scope="row">
+                        @casa.morada
+                    </td>
+                    <td scope="row">
+                        @casa.numero
+                    </td>
+                    <td scope="row">
+                        @casa.codigoPostal
+                    </td>
+                    <td scope="row">
+                        @casa.localidade
+                    </td>
+                    <td scope="row">
+                        @casa.distrito
+                    </td>
+                    <td scope="row">
+                        @casa.pais
+                    </td>
+                    <td>
+                        <a href="/editarCasa/@casa.Id"><button type="button" class="btn btn-primary"><span class="oi oi-pencil" data-glyph="pencil"></span></button></a>
+                        <button type="button" class="btn btn-danger" @onclick="() => EliminarCasa(casa.Id)"><span class="oi oi-trash" data-glyph="trash"></span></button>
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+}
+else
+{
+    <p>@Erro</p>
+}
+</div>
+@code {
+
+    public List<Casa> casas { get; set; }
+    public string Erro { get; set; }
+    public List<Pessoa> pessoas { get; set; }
+    public int idDono { get; set; }
+    public string nomeCasa { get; set; }
+    public string moradaCasa { get; set; }
+    public int numeroCasa { get; set; }
+    public string codigoPostal { get; set; }
+    public string localidade { get; set; }
+    public string distrito { get; set; }
+    public string pais { get; set; }
+
+    public bool showForm { get; set; }
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Este código tem de ser adicionado aqui neste metodo pois o OnInitializedAsync é executado antes do OnAfterRenderAsync e é preciso carregar os dados antes de renderizar a página 
+        try
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            HttpResponseMessage response = await client.GetAsync("ListarPessoas/");
+            if (response.IsSuccessStatusCode)
+            {
+                pessoas = await response.Content.ReadFromJsonAsync<List<Pessoa>>();
+
+                Console.WriteLine("Casas carregadas!");
+            }
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        try
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            HttpResponseMessage response = await client.GetAsync("getCasas/");
+
+            if (response.IsSuccessStatusCode)
+            {
+                casas = await response.Content.ReadFromJsonAsync<List<Casa>>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Erro = ex.Message;
+        }
+    }
+
+    public async Task EliminarCasa(int id)
+    {
+        try
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            HttpResponseMessage response = await client.DeleteAsync("eliminarCasa/" + id);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+                Console.WriteLine("Casa eliminada!");
+            }
+        }catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            Console.WriteLine("Erro ao eliminar casa!");
+        }
+        NavigationManager.NavigateTo("/GerirCasas", true);
+    }
+
+    //vai buscar uma pessoa pelo id e retorna uma variavel do tipo "pessoa"
+    public async Task<Pessoa> GetPessoa(int id)
+    {
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            HttpResponseMessage response = await client.GetAsync("ListarPessoa/" + id);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<Pessoa>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        return null;
+    }
+
+    public string GetNomePessoa(Pessoa pessoa)
+    {
+        return pessoa.nome; 
+    }
+
+    public async Task AdicionarCasa()
+    {
+        if (idDono == null || nomeCasa.Trim() == "" || moradaCasa.Trim() == "" || numeroCasa == null || codigoPostal.Trim() == "" || localidade.Trim() == "" || distrito.Trim() == "" || pais.Trim() == "")
+        {
+            Console.WriteLine("Preencha todos os campos!");
+        }
+        else
+        {
+            try
+            {
+                var client = new HttpClient();
+                client.BaseAddress = new Uri("https://localhost:44360/");
+                HttpResponseMessage response = await client.PostAsJsonAsync("inserirCasa/", new Casa { id_Dono = idDono, nome = nomeCasa, morada = moradaCasa, numero = numeroCasa, codigoPostal = codigoPostal, localidade = localidade, distrito = distrito, pais = pais });
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+                    Console.WriteLine("Casa adicionada!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("Erro ao adicionar casa!");
+            }
+            NavigationManager.NavigateTo("/GerirCasas", true);
+        }
+    }
+    public async Task changeFormStatus(){
+        showForm = !showForm;
+    }
+}

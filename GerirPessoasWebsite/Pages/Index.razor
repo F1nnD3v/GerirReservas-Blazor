@@ -1,0 +1,175 @@
+﻿@page "/"
+
+@using System.Net.Http;
+@using System.Net.Http.Headers;
+@using AutoMapper
+@using static System.Net.WebRequestMethods;
+
+@inject NavigationManager NavigationManager
+
+<h1>Adicionar pessoas</h1>
+@if (showForm)
+{
+<button type="button" class="btn btn-primary" @onclick="() => changeFormStatus()"><span class="oi oi-chevron-bottom" data-glyph="chevron-bottom"></span></button>
+ <div class="form-add">
+    <div class="form-group">
+        <input class="form-control" type="text" placeholder="Nome" bind="@nomePessoa" @oninput="((e) => { nomePessoa=e.Value.ToString();})"/>
+    </div>
+    <div class="form-group">
+        <input class="form-control" type="text" placeholder="Idade" bind="@idadePessoa"  @oninput="((e) => { idadePessoa=Convert.ToInt32(e.Value);})"/>
+    </div>
+    <div class="form-group">
+        <input class="form-control" type="text" placeholder="Email" bind="@emailPessoa"  @oninput="((e) => { emailPessoa=e.Value.ToString();})"/>
+    </div>
+    <div class="form-group">
+        <input class="form-control" type="text" placeholder="Telefone" bind="@telefonePessoa"  @oninput="((e) => { telefonePessoa=e.Value.ToString();})"/>
+    </div>
+</div>
+<button type="button" class="btn btn-primary" @onclick="() => AdicionarPessoa(nomePessoa, idadePessoa, telefonePessoa,emailPessoa)"><span class="oi oi-plus" data-glyph="plus"></span></button>
+}else{
+<button type="button" class="btn btn-primary" @onclick="() => changeFormStatus()"><span class="oi oi-chevron-top" data-glyph="chevron-bottom"></span></button>
+}
+
+<div class="form-group">
+<h2 style="margin-top:1rem;">Tabela de pessoas</h2>
+
+@if (Erro == null)
+{
+    @if (pessoas == null)
+    {
+        <p>A carregar pessoa...</p>
+    }
+    else
+    {
+        <table class="table">
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Idade</th>
+                <th scope="col">Email</th>
+                <th scope="col">Telefone</th>
+                <th></th>
+            </tr>
+            @foreach (var pessoa in pessoas)
+            {
+                <tr>
+                    <td scope="row">
+                        @pessoa.id
+                    </td>
+                    <td>
+                        @pessoa.nome
+                    </td>
+                    <td>
+                        @pessoa.idade
+                    </td>
+                    <td>
+                        @if(pessoa.email == null || pessoa.email == "")
+                        {
+                             <div class="btn btn-secondary" data-toggle="tooltip" data-html="true" title="Esta pessoa não tem o e-mail definido"><span class="oi oi-warning"></span></div>
+                        }
+                        else
+                        {
+                            @pessoa.email
+                        }
+                    </td> 
+                    <td>
+                        @if (pessoa.telefone == null || pessoa.telefone == "")
+                        {
+                             <div class="btn btn-secondary" data-toggle="tooltip" data-html="true" title="Esta pessoa não tem o telefone definido"><span class="oi oi-warning"></span></div>                        
+                        }
+                        else
+                        {
+                            @pessoa.telefone
+                        }
+                    </td>
+                    <td>
+                        <a href="/info/@pessoa.id"><button type="button" class="btn btn-primary"><span class="oi oi-eye"></span></button></a>
+                        <a href="/editarUser/@pessoa.id"><button type="button" class="btn btn-primary"><span class="oi oi-pencil" data-glyph="pencil"></span></button></a>
+                        <button type="button" class="btn btn-danger" @onclick="() => EliminarPessoa(pessoa.id)"><span class="oi oi-trash" data-glyph="trash"></span></button>
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+}
+else
+{
+    <p>@Erro</p>
+}
+</div>
+
+@code{
+    public List<Pessoa> pessoas{ get; set; }
+    //A variável 'Erro' é usada para mostrar a mensagem de erro/sucesso
+    public string Erro { get; set; }
+    public string nomePessoa { get; set; }
+    public int idadePessoa { get; set; }
+    public string emailPessoa { get; set; }
+    public string telefonePessoa { get; set; }
+
+    public bool showForm { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            HttpResponseMessage response = await client.GetAsync("ListarPessoas");
+
+            if (response.IsSuccessStatusCode)
+            {
+                pessoas = await response.Content.ReadFromJsonAsync<List<Pessoa>>();
+            }
+        }
+        catch (Exception ex)
+        {
+            Erro = ex.Message;
+        }
+    }
+
+    public async Task EliminarPessoa(int id)
+    {
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            HttpResponseMessage response = await client.DeleteAsync("EliminarPessoa/" + id);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+                Console.WriteLine("Pessoa eliminada com sucesso");
+            }
+        }catch(Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        NavigationManager.NavigateTo("/", true);
+    }
+
+    public async Task AdicionarPessoa(string nome, int idade, string telefone, string email)
+    {
+        var pessoa = new Pessoa();
+        pessoa.nome = nome;
+        pessoa.idade = idade;
+        pessoa.telefone = telefone;
+        pessoa.email = email;
+        Console.WriteLine($"Nome: {pessoa.nome}\nIdade: {pessoa.idade}\nTelefone:{pessoa.telefone}\nE-mail: {pessoa.email}");
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360");
+            HttpResponseMessage response = await client.PostAsJsonAsync("AdicionarPessoa/", pessoa);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Pessoa adicionada com sucesso");
+            }
+        }catch(Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        NavigationManager.NavigateTo("/", true);
+    }
+
+    public async Task changeFormStatus(){
+        showForm = !showForm;
+    }
+}

@@ -1,0 +1,163 @@
+﻿@using System.Net.Http;
+@using GerirPessoasWebsite.Modelos;
+@using System.Net.Http.Json;
+
+@page "/EditarReserva/{id:int}";
+
+<h3>Editar reserva</h3>
+
+@if(Erro == null)
+{
+        @if(pessoas == null && statuses == null)
+        {
+            <p>A carregar...</p>
+        }
+        else
+        {
+            <input id="checkin" type="date" min="@today" bind="@dataCheckIn" required @onchange="((e) => {dataCheckIn = e.Value.ToString();})"/>
+            <input id="checkin" type="date" min="@tomorrow" bind="@dataCheckOut" required @onchange="((e) => {dataCheckOut = e.Value.ToString();})"/>
+            <input type="textarea" placeholder="observações" bind="@observacoes" @onchange="((e) => {observacoes = e.Value.ToString();})"/>
+            <select class="form-select" aria-label="Default select example" @onchange="((e) => {id_status = Convert.ToInt32(e.Value);})">
+                    @foreach(var stat in statuses)
+                    {
+                        if(stat.Id_status == id_status){
+                           <option selected value="@id_status">@stat.status</option>
+                        }else{
+                           <option value="@stat.Id_status">@stat.status</option>
+                        }
+                    }
+            </select>
+            <select class="form-select" aria-label="Default select example" @onchange="((e) => {id_cliente = Convert.ToInt32(e.Value);})">
+                    @foreach (var pessoa in pessoas)
+                    {   
+                        if(pessoa.id == id_cliente){
+                            <option selected value="@pessoa.id">@pessoa.nome</option>
+                        }
+                        else{
+                            <option value="@pessoa.id">@pessoa.nome</option>
+                        }
+                    }
+            </select>
+            <select class="form-select" aria-label="Default select example" @onchange="((e) => {id_casa = Convert.ToInt32(e.Value);})">
+                @foreach(var casa in casas)
+                {
+                    if(casa.Id == id_casa){
+                        <option selected value="@casa.Id">@casa.nome</option>
+                    }
+                    else
+                    {
+                        <option value="@casa.Id">@casa.nome</option>
+                    }
+                }
+            </select>
+            <div class="input-group mb-3">
+            <input type="number" class="form-control" required bind="@valor" @onchange="((e) => {valor = Convert.ToInt32(e.Value);})"><span class="input-group-text">€</span>
+            </div>
+            <button class="btn btn-primary" @onclick="((e) => {Modal.Open(dataCheckIn, dataCheckOut, observacoes, id_status, id_cliente, id_casa, valor);})">Guardar reserva</button>
+        }
+}
+
+<GerirPessoasWebsite.Components.ModalEditarReserva @ref="Modal"></GerirPessoasWebsite.Components.ModalEditarReserva>
+
+
+@code {
+    public GerirPessoasWebsite.Components.ModalEditarReserva Modal { get; set; }
+
+    [Parameter]
+    public int id { get; set; }
+    public string dataCheckIn { get; set; }
+    public string dataCheckOut { get; set; }
+    public string observacoes { get; set; }
+    public int id_status { get; set; }
+    public int id_cliente { get; set; }
+    public int id_casa { get; set; }
+    private int valor { get; set; }
+
+    public DateTime todayDate { get; set; }
+    public string tomorrow { get; set; }
+    public string today { get; set; }
+
+    public List<Status> statuses { get; set; }
+    public List<Pessoa> pessoas { get; set; }
+    public List<Casa> casas { get; set; }
+
+    public string Erro { get; set; }
+
+    protected override async Task OnInitializedAsync(){
+        todayDate = DateTime.Now;
+        today = DateTime.Now.ToString("d/M/yyyy h:mm:ss");
+        tomorrow =  todayDate.AddDays(1).ToString("d/M/yyyy h:mm:ss");
+
+        //Carrega todos os status existentes
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            HttpResponseMessage response;
+            response = await client.GetAsync("getStatus/");
+            if (response.IsSuccessStatusCode)
+            {
+                statuses = await response.Content.ReadFromJsonAsync<List<Status>>();
+                Console.WriteLine("Status carregados!");
+            }
+        }catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        } 
+
+        //Carrega todas as pessoas existentes
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            HttpResponseMessage response = await client.GetAsync("ListarPessoas/");
+
+            if (response.IsSuccessStatusCode)
+            {
+                pessoas = await response.Content.ReadFromJsonAsync<List<Pessoa>>();
+                Console.WriteLine("Pessoas Carregadas");
+            }
+        }catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        //Carrega todas as casas existentes
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360");
+            HttpResponseMessage response = await client.GetAsync("getCasas");
+            if (response.IsSuccessStatusCode)
+            {
+                casas = await response.Content.ReadFromJsonAsync<List<Casa>>();
+                Console.WriteLine("Casas carregadas");
+            }
+        }catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            HttpResponseMessage response = await client.GetAsync("getReserva/" + id);
+            if (response.IsSuccessStatusCode)
+            {
+                var reserva = await response.Content.ReadFromJsonAsync<Reserva>();
+                dataCheckIn = reserva.DataCheckIn;
+                dataCheckOut = reserva.DataCheckOut;
+                observacoes = reserva.Observacoes;
+                id_status = reserva.Id_status;
+                id_cliente = reserva.id_cliente;
+                id_casa = reserva.id_casa;
+                valor = reserva.valor;
+                Console.WriteLine("Reserva carregada");
+                Console.WriteLine(valor);
+                Console.WriteLine(dataCheckIn);
+                Console.WriteLine(dataCheckOut);
+                Console.WriteLine(observacoes);
+            }
+        }catch(Exception ex){
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+}

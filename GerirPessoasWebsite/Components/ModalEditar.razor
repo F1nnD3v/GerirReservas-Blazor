@@ -1,0 +1,95 @@
+﻿@inject NavigationManager NavigationManager;
+
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tem a certeza que deseja editar esta pessoa com essas seguintes opções?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    <strong>Id:</strong> @idModal
+                </p>
+                <p>
+                    <strong>Nome:</strong> @nomeModal
+                </p>
+                <p>
+                    <strong>Idade:</strong> @idadeModal
+                </p>
+                <p>
+                    <strong>Email:</strong> @emailModal
+                </p>
+                <p>
+                    <strong>Telefone:</strong> @telefoneModal
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success"  @onclick="() => Editar(idModal, nomeModal, idadeModal, emailModal, telefoneModal)">Sim</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" @onclick="() => Close()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@if (ShowBackdrop)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+
+@code {
+
+
+    public Guid Guid = Guid.NewGuid();
+    public string ModalDisplay = "none;";
+    public string ModalClass = "";
+    public bool ShowBackdrop = false;
+    private int idModal;
+    private string nomeModal;
+    private int idadeModal;
+    private string emailModal;
+    public string telefoneModal;
+
+    public void Open(int id, string nome, int idade, string email, string telefone)
+    {
+        this.idModal = id;
+        this.nomeModal = nome;
+        this.idadeModal = idade;
+        this.emailModal = email;
+        this.telefoneModal = telefone;
+        ModalDisplay = "block;";
+        ModalClass = "Show";
+        ShowBackdrop = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+        StateHasChanged();
+    }
+
+    //Mandar um pedido para o api para editar a pessoa
+    public async Task Editar(int id, string nome, int idade, string email, string telefone)
+    {
+        Pessoa pessoa = new Pessoa(id, nome, idade, telefone, email);
+        try{
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360");
+            HttpResponseMessage response = await client.PutAsJsonAsync("EditarPessoa",pessoa);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Pessoa editada com sucesso");
+            }
+        }catch(Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        NavigationManager.NavigateTo("/", true);
+    }
+}

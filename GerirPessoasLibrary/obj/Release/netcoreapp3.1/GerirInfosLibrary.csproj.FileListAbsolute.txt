@@ -1,0 +1,14 @@
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\bin\Release\netcoreapp3.1\GerirInfosLibrary.dll.config
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\bin\Release\netcoreapp3.1\GerirInfosLibrary.deps.json
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\bin\Release\netcoreapp3.1\GerirInfosLibrary.runtimeconfig.json
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\bin\Release\netcoreapp3.1\GerirInfosLibrary.runtimeconfig.dev.json
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\bin\Release\netcoreapp3.1\GerirInfosLibrary.dll
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\bin\Release\netcoreapp3.1\GerirInfosLibrary.pdb
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\obj\Release\netcoreapp3.1\GerirInfosLibrary.csproj.AssemblyReference.cache
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\obj\Release\netcoreapp3.1\GerirInfosLibrary.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\obj\Release\netcoreapp3.1\GerirInfosLibrary.AssemblyInfoInputs.cache
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\obj\Release\netcoreapp3.1\GerirInfosLibrary.AssemblyInfo.cs
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\obj\Release\netcoreapp3.1\GerirInfosLibrary.csproj.CoreCompileInputs.cache
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\obj\Release\netcoreapp3.1\GerirInfosLibrary.dll
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\obj\Release\netcoreapp3.1\GerirInfosLibrary.pdb
+C:\Users\35193\Desktop\pastas e etc\c#\GerirUtilizadores\GerirPessoasLibrary\obj\Release\netcoreapp3.1\GerirInfosLibrary.genruntimeconfig.cache

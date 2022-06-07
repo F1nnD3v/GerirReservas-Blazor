@@ -1,0 +1,131 @@
+﻿@inject NavigationManager NavigationManager;
+
+@using System.Net.Http;
+@using System.Net.Http.Headers;
+@using AutoMapper
+@using static System.Net.WebRequestMethods;
+
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tem a certeza que deseja editar esta casa com essas seguintes opções?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    <strong>Id:</strong> @idCasaModal
+                </p>
+                <p>
+                    <strong>Dono:</strong> @idDono
+                </p>
+                <p>
+                    <strong>Nome:</strong> @nome
+                </p>
+                <p
+                    <strong>Morada:</strong> @morada
+                </p>
+                <p>
+                    <strong>Número:</strong> @numero
+                </p>                
+                <p>
+                    <strong>Código postal:</strong> @codigoPostal
+                </p>                
+                <p>
+                    <strong>Localidade:</strong> @localidade
+                </p>                
+                <p>
+                    <strong>Distrito:</strong> @distrito
+                </p>                
+                <p>    
+                    <strong>País:</strong> @pais
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success"  @onclick="() => EditarCasa(idCasaModal, idDono, nome,  morada, numero,  codigoPostal,  localidade, distrito, pais)">Sim</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" @onclick="() => Close()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@if (ShowBackdrop)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code{
+    public Guid Guid = Guid.NewGuid();
+    public string ModalDisplay = "none;";
+    public string ModalClass = "";
+    public bool ShowBackdrop = false;
+    
+    int idCasaModal;
+    int idDono;
+    string nome;
+    string morada;
+    int numero;
+    string codigoPostal;
+    string localidade;
+    string distrito;
+    string pais;
+    int pessoaid;
+
+    public void Open(int idCasaModal, int idDono, string nome, string morada, int numero, string codigoPostal, string localidade,string distrito, string pais, int pessoaid)
+    {
+        this.idCasaModal = idCasaModal;
+        this.idDono = idDono;
+        this.nome = nome;
+        this.morada = morada;
+        this.numero = numero;
+        this.codigoPostal = codigoPostal;
+        this.localidade = localidade;
+        this.distrito = distrito;
+        this.pais = pais;
+        this.pessoaid = pessoaid;
+        ModalDisplay = "block;";
+        ModalClass = "Show";
+        ShowBackdrop = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+        StateHasChanged();
+    }
+
+    public async Task EditarCasa(int idCasa, int idDono, string nome, string morada, int numero, string codigopostal, string localidade, string distrito, string pais)
+    {
+        try
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            var casa = new Casa();
+            casa.Id = idCasa;
+            casa.id_Dono = idDono;
+            casa.nome = nome;
+            casa.morada = morada;
+            casa.numero = numero;
+            casa.codigoPostal = codigoPostal;
+            casa.localidade = localidade;
+            casa.distrito = distrito;
+            casa.pais = pais;
+            HttpResponseMessage response = await client.PutAsJsonAsync("editarCasa", casa);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Casa editada com sucesso!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Não foi possivel editar casa!");
+            Console.WriteLine(ex.Message);
+        }
+        NavigationManager.NavigateTo("/", true);
+    }
+}

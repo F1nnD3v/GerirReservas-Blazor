@@ -1,0 +1,59 @@
+﻿@page "/info/{id:int}"
+
+<h3>Informações de @nome</h3>
+
+<h1>Informações pessoais</h1>
+
+<p>Id: @id</p>
+<p>Nome: @nome</p>
+<p>Idade: @idade</p>
+<p>E-mail: @email</p>
+<p>Telefone: @telefone</p>
+
+<h1>Informações da casa</h1>
+
+<h2>Mobília</h2>
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    public string nome { get; set; }
+    public int idade { get; set; }
+    public string email { get; set; }
+    public string telefone { get; set; }
+    public Pessoa pessoa { get; set; }
+    public string Erro { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var client = new HttpClient();
+            client.BaseAddress = new Uri("https://localhost:44360/");
+            HttpResponseMessage response = await client.GetAsync("ListarPessoa/" + id);
+
+            if (response.IsSuccessStatusCode)
+            {
+                pessoa = await response.Content.ReadFromJsonAsync<Pessoa>();
+                id = pessoa.id;
+                nome = pessoa.nome;
+                idade = pessoa.idade;
+                telefone = pessoa.telefone;
+                email = pessoa.email;
+
+                Console.WriteLine("Dados carregados!");
+            }
+            else
+            {
+                Console.WriteLine("Erro ao carregar dados!");
+            }
+        }
+        catch (Exception ex)
+        {
+            Erro = ex.Message;
+            Console.WriteLine("Erro: " + Erro);
+        }
+    }
+
+}
